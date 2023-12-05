@@ -1,9 +1,9 @@
 ---
 import { z } from "zod";
-import { ProductResult } from "../utils/schemas";
 import ProductCard from "./ProductCard.astro";
+import { ProductSchema } from "../utils/storeCMS";
 
-const ProductsResult = z.array(ProductResult);
+const ProductsResult = z.array(ProductSchema);
 export interface Props {
   products: z.infer<typeof ProductsResult>;
 }

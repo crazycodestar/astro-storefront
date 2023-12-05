@@ -16,13 +16,16 @@
     "@astrojs/vercel": "^3.3.0",
     "@nanostores/persistent": "^0.8.0",
     "@shopify/hydrogen-react": "^2023.4.0",
+    "@t3-oss/env-core": "^0.7.1",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "astro": "^2.4.2",
+    "axios": "^1.6.2",
     "nanostores": "^0.8.1",
     "svelte": "^3.59.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@types/node": "^20.10.3",
     "prettier": "^2.8.8",
     "prettier-plugin-astro": "^0.8.0",
     "prettier-plugin-tailwindcss": "^0.2.8",

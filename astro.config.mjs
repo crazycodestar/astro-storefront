@@ -11,6 +11,7 @@ import svelte from "@astrojs/svelte";
 export default defineConfig({
   output: "server",
   adapter: vercel(),
+  server: { port: 8000 },
   integrations: [
     tailwind({
       config: {

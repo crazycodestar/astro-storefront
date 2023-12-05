@@ -1,0 +1,78 @@
+---
+import { getProduct } from "../../utils/storeCMS";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import NotFoundLayout from "../../layouts/NotFoundLayout.astro";
+// import AddToCartForm from "../../components/AddToCartForm.svelte";
+import ProductBreadcrumb from "../../components/ProductBreadcrumb.astro";
+import ProductReviews from "../../components/ProductReviews.astro";
+import ProductAccordions from "../../components/ProductAccordions.astro";
+
+const { product: productId } = Astro.params;
+
+if (!productId) {
+  return Astro.response.status = 404;
+}
+
+const result= await getProduct(productId);
+---
+
+{
+  !result? (
+    <NotFoundLayout title="Product not found" message="Product not found" />
+  ) : (
+    <BaseLayout title={result.product.name}>
+      <div class="container pt-6">
+        <ProductBreadcrumb title={result.product.name} />
+      </div>
+
+      <section class="container">
+        <div class="pb-16 pt-6 lg:grid lg:grid-cols-12 lg:gap-20">
+          <div class="lg:col-span-7">
+            <img src={result.product.image} alt={result.product.name}
+              sizes={`
+              (min-width: 1540px) 348px,
+              (min-width: 1280px) 284px,
+              (min-width: 1040px) 309px,
+              (min-width: 780px) 348px,
+              (min-width: 640px) 284px,
+              calc(100vw - 48px)
+            `}
+            />
+            {/* <ProductImageGallery images={product.images} /> */}
+          </div>
+
+          <div class="mt-8 lg:col-span-5 lg:mt-0">
+            <div>{result.product.price}</div>
+            {/*<ProductInformations
+              title={product.name}
+              price={product.price}
+            />*/}
+
+            <div>
+            {/*
+              
+              <AddToCartForm
+                client:load
+                variantId={product.id}
+                variantQuantityAvailable={product.inventory}
+                variantAvailableForSale={product.inventory}
+              />
+            />*/}
+            <div>add to cart</div>
+              
+            </div>
+
+            <div class="mt-8">
+              <ProductAccordions />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container">
+        <ProductReviews />
+      </section>
+
+    </BaseLayout>
+  )
+}
