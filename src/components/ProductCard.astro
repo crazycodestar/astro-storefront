@@ -11,7 +11,7 @@ const { product } = Astro.props as Props;
 <a
   href={`/products/${product.id}`}
 >
-  <img src={product.image} alt={product.name} class="w-full aspect-[3/3.5] object-cover rounded-md" />
+  <img src={product.image} alt={product.name} class="w-full aspect-[3/3.5] object-contain rounded-md" />
   <div class="text-zinc-700 pt-2">
     <h3 class="font-medium text-lg">{product.name}</h3>
     <p>
