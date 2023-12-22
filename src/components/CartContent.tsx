@@ -6,7 +6,7 @@ const CartContent = () => {
   const total = 200;
 
   return (
-    <div className="w-[350px] space-y-6">
+    <div className="space-y-6">
       {/* FIXME: Astro hydration error here */}
       {cart.products.map((product, index) => (
         <CartItem key={index} {...product} />

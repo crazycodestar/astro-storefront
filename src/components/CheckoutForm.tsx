@@ -12,7 +12,7 @@ const CheckoutForm = () => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col-reverse md:h-full md:flex-row">
       {isModal ? (
         <div className="absolute left-0 top-0 z-50 flex h-screen w-screen items-center justify-center backdrop-blur-sm">
           <div className="flex w-[300px] flex-col items-center rounded-lg bg-white p-6 shadow-lg">
@@ -33,13 +33,15 @@ const CheckoutForm = () => {
           </div>
         </div>
       ) : null}
-      <div className="flex w-1/2 flex-col items-end border-r p-8">
-        <div className="w-2/3">
+      <div className="flex flex-col border-r p-8 md:w-1/2 lg:items-end">
+        <div className="lg:w-2/3">
           <InfoBoard onShowModal={handleShowModal} />
         </div>
       </div>
-      <div className="w-1/2 bg-zinc-100 p-8">
-        <CartContent />
+      <div className="bg-zinc-100 p-8 md:w-1/2">
+        <div className="lg:w-[350px]">
+          <CartContent />
+        </div>
       </div>
     </div>
   );
