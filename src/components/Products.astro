@@ -11,10 +11,10 @@ const { products } = Astro.props as Props;
 ---
 
 <section>
-  <div class="container py-16 sm:py-20">
+  <div class="py-16 mx-[15px] md:mx-[48px]">
     <h2 class="sr-only">Products</h2>
 
-    <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => <ProductCard product={product} />)}
     </div>
   </div>

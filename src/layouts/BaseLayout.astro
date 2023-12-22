@@ -1,8 +1,8 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import CartDrawer from "../components/CartDrawer.svelte";
 import AnnouncementBar from "../components/AnnouncementBar.astro";
+import CartDrawer from "../components/CartDrawer";
 
 export interface Props {
   title: string;
@@ -28,8 +28,8 @@ const { title, description = defaultDesc } = Astro.props as Props;
     </style>
   </head>
   <body>
-    <AnnouncementBar />
-    <CartDrawer client:idle />
+    <!-- <AnnouncementBar /> -->
+    <CartDrawer client:load />
     <Header />
     <main>
       <slot />

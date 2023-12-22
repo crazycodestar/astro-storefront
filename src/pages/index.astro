@@ -2,6 +2,7 @@
 import { getProducts } from "./../utils/storeCMS";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Products from "../components/Products.astro";
+import Jombotron from "../components/Jombotron.astro";
 // import { setCache } from "../utils/cache";
 
 const title = "Astro + Analyze";
@@ -12,8 +13,17 @@ const response = await getProducts();
 // setCache.short(Astro);
 ---
 
-<BaseLayout title={title} description="Online store example that uses analyze as it's backend CMS to ecommerce features to sellers">
+<BaseLayout
+  title={title}
+  description="Online store example that uses analyze as it's backend CMS to ecommerce features to sellers"
+>
   {!response && <div>Can't find products</div>}
   {!response?.products.length && <div>no products avaliable</div>}
-  {response && <Products products={response.products} />}
+  {
+    response && 
+    <div>
+      <Jombotron />
+      <Products products={response.products} />
+    </div>
+  }
 </BaseLayout>

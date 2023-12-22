@@ -1,13 +1,8 @@
 import type { z } from "zod";
 import { atom } from "nanostores";
 import { persistentAtom } from "@nanostores/persistent";
-import {
-  getCart,
-  addCartLines,
-  createCart,
-  removeCartLines,
-} from "../utils/shopify";
 import type { CartResult } from "../utils/schemas";
+import type { ProductSchema } from "../utils/storeCMS";
 
 // Cart drawer state (open or closed) with initial value (false) and no persistent state (local storage)
 export const isCartDrawerOpen = atom(false);
@@ -15,112 +10,136 @@ export const isCartDrawerOpen = atom(false);
 // Cart is updating state (true or false) with initial value (false) and no persistent state (local storage)
 export const isCartUpdating = atom(false);
 
-const emptyCart = {
-  id: "",
-  checkoutUrl: "",
+export type CartResultDef = z.infer<typeof CartResult>;
+
+const emptyCart: CartResultDef = {
+  products: [],
+  totalPrice: 0,
   totalQuantity: 0,
-  lines: { nodes: [] },
-  cost: { subtotalAmount: { amount: "", currencyCode: "" } },
 };
 
 // Cart store with persistent state (local storage) and initial value
-export const cart = persistentAtom<z.infer<typeof CartResult>>(
-  "cart",
-  emptyCart,
-  {
-    encode: JSON.stringify,
-    decode: JSON.parse,
-  }
-);
+export const cart = persistentAtom<CartResultDef>("cart", emptyCart, {
+  encode: JSON.stringify,
+  decode: JSON.parse,
+});
 
 // Fetch cart data if a cart exists in local storage, this is called during session start only
 // This is useful to validate if the cart still exists in Shopify and if it's not empty
 // Shopify automatically deletes the cart when the customer completes the checkout or if the cart is unused or abandoned after 10 days
 // https://shopify.dev/custom-storefronts/cart#considerations
-export async function initCart() {
-  const sessionStarted = sessionStorage.getItem("sessionStarted");
-  if (!sessionStarted) {
-    sessionStorage.setItem("sessionStarted", "true");
-    const localCart = cart.get();
-    const cartId = localCart?.id;
-    if (cartId) {
-      const data = await getCart(cartId);
+// export async function initCart() {
+//   const sessionStarted = sessionStorage.getItem("sessionStarted");
+//   if (!sessionStarted) {
+// sessionStorage.setItem("sessionStarted", "true");
+// const localCart = cart.get();
+// const cartId = localCart?.id;
+// if (cartId) {
+//   const data = await getCart(cartId);
 
-      if (data) {
-        cart.set({
-          id: data.id,
-          cost: data.cost,
-          checkoutUrl: data.checkoutUrl,
-          totalQuantity: data.totalQuantity,
-          lines: data.lines,
-        });
-      } else {
-        // If the cart doesn't exist in Shopify, reset the cart store
-        cart.set(emptyCart);
-      }
-    }
-  }
-}
+//   if (data) {
+//     cart.set({
+//       id: data.id,
+//       cost: data.cost,
+//       checkoutUrl: data.checkoutUrl,
+//       totalQuantity: data.totalQuantity,
+//       lines: data.lines,
+//     });
+//   } else {
+//     // If the cart doesn't exist in Shopify, reset the cart store
+//     cart.set(emptyCart);
+//   }
+// }
+//   }
+// }
 
+export type CartItem = z.infer<typeof ProductSchema>;
 // Add item to cart or create a new cart if it doesn't exist yet
-export async function addCartItem(item: { id: string; quantity: number }) {
-  const localCart = cart.get();
-  const cartId = localCart?.id;
+export function addCartItem(item: CartItem) {
+  // incase I want to reset cart
+  // cart.set(emptyCart);
+  // return;
 
   isCartUpdating.set(true);
 
-  if (!cartId) {
-    const cartData = await createCart(item.id, item.quantity);
+  const { products, totalPrice, totalQuantity } = cart.get();
 
-    if (cartData) {
-      cart.set({
-        ...cart.get(),
-        id: cartData.id,
-        cost: cartData.cost,
-        checkoutUrl: cartData.checkoutUrl,
-        totalQuantity: cartData.totalQuantity,
-        lines: cartData.lines,
-      });
-      isCartUpdating.set(false);
-      isCartDrawerOpen.set(true);
-    }
-  } else {
-    const cartData = await addCartLines(cartId, item.id, item.quantity);
+  // handle if same product is added
+  const isProductInCart = products.find(
+    (product) => product.product.id === item.id,
+  );
 
-    if (cartData) {
-      cart.set({
-        ...cart.get(),
-        id: cartData.id,
-        cost: cartData.cost,
-        checkoutUrl: cartData.checkoutUrl,
-        totalQuantity: cartData.totalQuantity,
-        lines: cartData.lines,
-      });
-      isCartUpdating.set(false);
-      isCartDrawerOpen.set(true);
-    }
+  if (isProductInCart) {
+    cart.set({
+      products: products.map((product) => ({
+        ...product,
+        quantity:
+          product.product.id === item.id
+            ? product.quantity + 1
+            : product.quantity,
+      })),
+      totalPrice: totalPrice + item.price,
+      totalQuantity: totalQuantity + 1,
+    });
+
+    isCartUpdating.set(false);
+    isCartDrawerOpen.set(true);
+    return;
   }
+
+  cart.set({
+    products: [...products, { product: item, quantity: 1 }],
+    totalPrice: totalPrice + item.price,
+    totalQuantity: totalQuantity + 1,
+  });
+
+  isCartUpdating.set(false);
+  isCartDrawerOpen.set(true);
 }
 
-export async function removeCartItems(lineIds: string[]) {
-  const localCart = cart.get();
-  const cartId = localCart?.id;
-
+export function removeCartItem(id: CartItem["id"]) {
   isCartUpdating.set(true);
 
-  if (cartId) {
-    const cartData = await removeCartLines(cartId, lineIds);
+  const { products, totalPrice, totalQuantity } = cart.get();
 
-    if (cartData) {
-      cart.set({
-        ...cart.get(),
-        id: cartData.id,
-        cost: cartData.cost,
-        checkoutUrl: cartData.checkoutUrl,
-        totalQuantity: cartData.totalQuantity,
-        lines: cartData.lines,
-      });
-      isCartUpdating.set(false);
-    }
-  }
+  const productToRemove = products.find((product) => product.product.id === id);
+  if (!productToRemove) return;
+
+  cart.set({
+    products: products.filter(({ product }) => product.id !== id),
+    totalPrice:
+      totalPrice - productToRemove.product.price * productToRemove.quantity,
+    totalQuantity: totalQuantity - productToRemove.quantity,
+  });
+
+  isCartUpdating.set(false);
 }
+
+export function clearCart() {
+  isCartUpdating.set(true);
+  cart.set(emptyCart);
+  isCartUpdating.set(false);
+}
+
+// export async function removeCartItems(lineIds: string[]) {
+//   const localCart = cart.get();
+//   const cartId = localCart?.id;
+
+//   isCartUpdating.set(true);
+
+//   if (cartId) {
+//     const cartData = await removeCartLines(cartId, lineIds);
+
+//     if (cartData) {
+//       cart.set({
+//         ...cart.get(),
+//         id: cartData.id,
+//         cost: cartData.cost,
+//         checkoutUrl: cartData.checkoutUrl,
+//         totalQuantity: cartData.totalQuantity,
+//         lines: cartData.lines,
+//       });
+//       isCartUpdating.set(false);
+//     }
+//   }
+// }

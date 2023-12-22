@@ -14,7 +14,7 @@ const GetProductsResponseSchema = z.object({
   products: z.array(ProductSchema),
 });
 
-const STOREID = import.meta.env.PUBLIC_STORE_ID;
+export const STOREID = import.meta.env.PUBLIC_STORE_ID;
 
 export const getProducts = async () => {
   try {
