@@ -2,8 +2,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "./Input";
-import { usePersistForm } from "../hooks/usePersistForm";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { cart as $cart, clearCart } from "../stores/cart";
 import { useStore } from "@nanostores/react";
 import axios from "../config/axios";
@@ -28,28 +27,22 @@ const InfoBoard = ({ onShowModal }: { onShowModal: () => void }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
 
-  const getSavedData = useCallback(() => {
-    try {
-      let data = localStorage.getItem(FORM_DATA_KEY);
-      if (data) {
-        // Parse it to a javaScript object
-        data = JSON.parse(data);
-        return data as unknown as DeliveryInfoSchema;
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
   const {
     register,
     handleSubmit,
     watch,
+    formState,
     formState: { errors },
+    reset,
   } = useForm<DeliveryInfoSchema>({
-    defaultValues: getSavedData(),
     resolver: zodResolver(DeliveryInfoSchema),
   });
+
+  useEffect(() => {
+    if (formState.isSubmitSuccessful) {
+      reset();
+    }
+  }, [formState, reset]);
 
   const onSubmit: SubmitHandler<DeliveryInfoSchema> = async (data) => {
     setIsFailed(false);
@@ -86,7 +79,6 @@ const InfoBoard = ({ onShowModal }: { onShowModal: () => void }) => {
     // FIXME: Add quantity to cartDrawer
   };
 
-  usePersistForm({ value: watch(), key: FORM_DATA_KEY });
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="mb-8">
