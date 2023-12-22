@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const baseURL = import.meta.env.PRIVATE_CMS_URL;
+export const baseURL = import.meta.env.PUBLIC_CMS_URL;
 
 export default axios.create({
   // baseURL: "http://localhost:9000",

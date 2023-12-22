@@ -61,18 +61,23 @@ const InfoBoard = ({ onShowModal }: { onShowModal: () => void }) => {
       })),
       ...data,
     };
-    const result = await axios.post(
-      `http://localhost:3000/api/${STOREID}/order`,
-      request,
-    );
 
-    if (result.status === 200) {
-      // clearing
-      localStorage.removeItem(FORM_DATA_KEY);
-      clearCart();
+    try {
+      // FIXME: make baseURL work in axios
+      const result = await axios.post(`/api/${STOREID}/order`, request);
 
+      if (result.status === 200) {
+        // clearing
+        localStorage.removeItem(FORM_DATA_KEY);
+        clearCart();
+
+        setIsLoading(false);
+        return onShowModal();
+      }
+    } catch (err) {
       setIsLoading(false);
-      return onShowModal();
+      setIsFailed(true);
+      console.log(err);
     }
 
     // TODO: handle axios success response. temp disable axios submit and work on it

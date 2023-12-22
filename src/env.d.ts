@@ -1,15 +1,13 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
-  VITE_API_URL_EXAMPLE: string;
-  VITE_SECRET_KEY_EXAMPLE: string;
+  readonly PUBLIC_STORE_ID: string;
+  readonly PUBLIC_CMS_URL: string;
   // Add other environment variables here...
 }
 
-declare global {
-  interface ImportMeta {
-    env: ImportMetaEnv;
-  }
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
 
 export {};
